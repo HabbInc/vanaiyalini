@@ -11,6 +11,7 @@ import { ProductsModule } from '../products/products.module';
     ProductsModule, // to validate product exists
   ],
   providers: [CartService],
-  controllers: [CartController]
+  controllers: [CartController],
+  exports: [CartService],
 })
 export class CartModule {}
