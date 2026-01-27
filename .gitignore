@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# env files
+.env
+.env.*
+
+# Next.js
+.next/
+out/
+
+# NestJS
+dist/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
