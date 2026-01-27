@@ -39,4 +39,19 @@ export class ProductsService {
     if (!product) throw new NotFoundException('Product not found');
     return { deleted: true };
   }
+
+  //Ensures a seller can update only their own product.
+  async update(id: string, sellerId: string, data: any) {
+  const updated = await this.productModel
+    .findOneAndUpdate(
+      { _id: id, sellerId: new Types.ObjectId(sellerId) }, // ✅ ownership check
+      { $set: data },
+      { new: true },
+    )
+    .exec();
+
+  if (!updated) throw new NotFoundException('Product not found');
+  return updated;
+}
+
 }

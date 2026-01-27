@@ -7,12 +7,14 @@ import {
   Post,
   Req,
   UseGuards,
+  Patch ,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -45,4 +47,12 @@ export class ProductsController {
   remove(@Req() req: any, @Param('id') id: string) {
     return this.products.remove(id, req.user.userId);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('seller')
+  @Patch(':id')
+  update(@Req() req: any, @Param('id') id: string, @Body() dto: UpdateProductDto) {
+    return this.products.update(id, req.user.userId, dto);
+  }
+  
 }
