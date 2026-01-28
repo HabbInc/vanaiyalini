@@ -42,3 +42,11 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 
   return data;
 }
+
+export function clearToken() {
+  localStorage.removeItem('accessToken');
+}
+
+export function isLoggedIn() {
+  return !!getToken();
+}
