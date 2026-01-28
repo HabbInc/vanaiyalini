@@ -24,4 +24,11 @@ export class UsersController {
     const userId = req.user.userId;
     return this.users.addRole(userId, 'seller');
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  profile(@Req() req: any) {
+    return this.users.findByIdSafe(req.user.userId);
+  }
+
 }

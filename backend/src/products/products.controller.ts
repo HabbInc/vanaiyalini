@@ -26,6 +26,13 @@ export class ProductsController {
     return this.products.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('seller')
+  @Get('mine')
+  findMine(@Req() req: any) {
+    return this.products.findBySeller(req.user.userId);
+  }
+
   // 🌍 Public
   @Get(':id')
   findOne(@Param('id') id: string) {

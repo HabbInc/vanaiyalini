@@ -35,12 +35,16 @@ export default function RootLayout({
               <a href="/products" className="hover:underline">
                 Products
               </a>
-              <a href="/cart" className="hover:underline">
-                Cart
-              </a>
-              <a href="/orders" className="hover:underline">
-                Orders
-              </a>
+              {logged && (
+                <>
+                  <a href="/cart" className="hover:underline">
+                    Cart
+                  </a>
+                  <a href="/orders" className="hover:underline">
+                    Orders
+                  </a>
+                </>
+              )}
             </div>
 
             {/* RIGHT */}
@@ -65,7 +69,14 @@ export default function RootLayout({
                   Logout
                 </button>
               )}
+              {logged && (
+                <>
+                  <a href="/profile" className="hover:underline">Profile</a>
+                  <a href="/seller/products" className="hover:underline">Seller</a>
+                </>
+              )}
             </div>
+            
           </div>
         </nav>
 

@@ -34,4 +34,14 @@ export class UsersService {
     if (!updated) throw new NotFoundException('User not found');
     return updated;
   }
+
+  async findByIdSafe(userId: string) {
+    const user = await this.userModel
+      .findById(new Types.ObjectId(userId))
+      .select('_id name email roles status createdAt')
+      .exec();
+
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  } 
 }

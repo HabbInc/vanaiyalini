@@ -22,6 +22,14 @@ export class ProductsService {
     return this.productModel.find({ status: 'active' }).exec();
   }
 
+  async findBySeller(sellerId: string) {
+    return this.productModel
+      .find({ sellerId: new Types.ObjectId(sellerId) })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+
   // Public detail
   async findOne(id: string) {
     const product = await this.productModel.findById(id).exec();

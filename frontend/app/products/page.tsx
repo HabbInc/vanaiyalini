@@ -14,25 +14,55 @@ export default function ProductsPage() {
       .catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div className="p-6 text-red-600">{error}</div>;
-
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
+    <div className="space-y-6">
+      <header className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+          <p className="text-gray-600 mt-1">Browse available items and add them to your cart.</p>
+        </div>
+      </header>
 
-      <div className="grid gap-4">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((p) => (
           <Link
             key={p._id}
             href={`/products/${p._id}`}
-            className="border p-4 hover:bg-gray-50"
+            className="group rounded-xl border bg-white p-5 shadow-sm hover:shadow-md transition"
           >
-            <div className="font-semibold">{p.title}</div>
-            <div className="text-gray-600">LKR {p.price}</div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold group-hover:underline">
+                  {p.title}
+                </h2>
+                <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                  {p.description || 'No description'}
+                </p>
+              </div>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                Stock: {p.stock ?? 0}
+              </span>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-xl font-bold">LKR {p.price}</div>
+              <div className="text-sm text-gray-500">View →</div>
+            </div>
           </Link>
         ))}
       </div>
+
+      {products.length === 0 && !error && (
+        <div className="rounded-xl border bg-white p-6 text-gray-600">
+          No products found.
+        </div>
+      )}
     </div>
   );
 }
-
