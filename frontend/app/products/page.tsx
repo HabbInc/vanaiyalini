@@ -38,6 +38,17 @@ export default function ProductsPage() {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
+                {p.imageUrl ? (
+                  <img
+                    src={`http://localhost:3001${p.imageUrl}`}
+                    alt={p.title}
+                    className="w-full h-36 object-cover rounded-lg mb-3 border"
+                  />
+                ) : (
+                <div className="w-full h-36 rounded-lg mb-3 bg-gray-100 border flex items-center justify-center text-gray-500 text-sm">
+                    No image
+                </div>
+                )}
                 <h2 className="text-lg font-semibold group-hover:underline">
                   {p.title}
                 </h2>

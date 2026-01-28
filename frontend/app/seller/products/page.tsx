@@ -16,16 +16,14 @@ export default function SellerProductsPage() {
         setErr(e.message);
         router.push('/profile');
       });
-  }, []);
+  }, [router]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">My Products</h1>
-          <p className="text-gray-600 mt-1">
-            Products you created as a seller
-          </p>
+          <p className="text-gray-600 mt-1">Products you created as a seller</p>
         </div>
 
         <a
@@ -49,10 +47,20 @@ export default function SellerProductsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p) => (
-            <div
-              key={p._id}
-              className="rounded-xl border bg-white p-5 shadow-sm"
-            >
+            <div key={p._id} className="rounded-xl border bg-white p-5 shadow-sm">
+              {/* IMAGE */}
+              {p.imageUrl ? (
+                <img
+                  src={`http://localhost:3001${p.imageUrl}`}
+                  alt={p.title}
+                  className="w-full h-40 object-cover rounded-lg border mb-3"
+                />
+              ) : (
+                <div className="w-full h-40 rounded-lg border bg-gray-50 mb-3 flex items-center justify-center text-gray-500 text-sm">
+                  No image
+                </div>
+              )}
+
               <h2 className="text-lg font-semibold">{p.title}</h2>
               <p className="text-sm text-gray-600 line-clamp-2">
                 {p.description || 'No description'}
@@ -68,9 +76,7 @@ export default function SellerProductsPage() {
               <div className="mt-4 flex gap-3">
                 <button
                   className="text-sm underline"
-                  onClick={() =>
-                    router.push(`/seller/products/${p._id}/edit`)
-                  }
+                  onClick={() => router.push(`/seller/products/${p._id}/edit`)}
                 >
                   Edit
                 </button>

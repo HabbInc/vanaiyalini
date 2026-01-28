@@ -25,6 +25,9 @@ export class Product {
 
   @Prop({ default: 'active' })
   status: 'active' | 'disabled';
+
+  @Prop({ default: '' })
+  imageUrl: string;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

@@ -29,6 +29,14 @@ export class ProductsService {
       .exec();
   }
 
+  async setImage(productId: string, imageUrl: string) {
+    const updated = await this.productModel.findByIdAndUpdate(
+      productId,
+      { imageUrl },
+      { new: true },
+    );
+    return updated;
+  }
 
   // Public detail
   async findOne(id: string) {

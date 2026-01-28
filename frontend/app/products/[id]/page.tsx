@@ -65,6 +65,13 @@ export default function ProductDetailPage() {
       <div className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
+            {product.imageUrl && (
+            <img
+                src={`http://localhost:3001${product.imageUrl}`}
+                alt={product.title}
+                className="w-full max-h-80 object-cover rounded-xl border"
+            />
+            )}
             <h1 className="text-3xl font-bold tracking-tight">{product.title}</h1>
             <p className="text-gray-600">
               {product.description || 'No description'}
