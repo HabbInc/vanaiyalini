@@ -72,4 +72,8 @@ export class AdminController {
     return this.admin.updateOrderStatus(id, dto.status);
   }
 
+  @Get('analytics/sales')
+  getSalesAnalytics() {
+    return this.admin.salesAnalytics();
+  }
 }

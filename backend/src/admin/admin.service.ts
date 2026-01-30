@@ -107,4 +107,28 @@ export class AdminService {
     if (!updated) throw new NotFoundException('Order not found');
     return { message: 'Order status updated', order: updated };
   }
+
+  async salesAnalytics() {
+    const data = await this.orderModel.aggregate([
+      {
+        $match: { status: { $ne: 'cancelled' } }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+          },
+          totalOrders: { $sum: 1 },
+          revenue: { $sum: '$totalAmount' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    return data.map(d => ({
+      date: d._id,
+      orders: d.totalOrders,
+      revenue: d.revenue
+    }));
+  }
 }
