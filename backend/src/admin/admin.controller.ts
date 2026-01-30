@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateProductDto } from 'src/products/dto/create-product.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -64,6 +65,11 @@ export class AdminController {
   @Patch('users/:id/unblock')
   unblockUser(@Param('id') id: string) {
     return this.admin.unblockUser(id);
+  }
+
+  @Patch('orders/:id/status')
+  updateOrderStatus(@Param('id') id: string, @Body() dto: UpdateOrderStatusDto) {
+    return this.admin.updateOrderStatus(id, dto.status);
   }
 
 }

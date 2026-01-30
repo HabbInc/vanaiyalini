@@ -96,4 +96,15 @@ export class AdminService {
     if (!updated) throw new NotFoundException('User not found');
     return { message: 'User unblocked', user: updated };
   }
+
+  async updateOrderStatus(orderId: string, status: string) {
+    const updated = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true },
+    );
+
+    if (!updated) throw new NotFoundException('Order not found');
+    return { message: 'Order status updated', order: updated };
+  }
 }
