@@ -21,8 +21,13 @@ export default function LoginPage() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      setToken(res.accessToken);
-      router.push('/products');
+      setToken(res.accessToken, res.user);
+      // ✅ Role-based redirect
+      if (res.user?.roles?.includes('admin')) {
+        router.push('/admin');
+      } else {
+        router.push('/products');
+      }
     } catch (e: any) {
       setErr(e.message);
     } finally {

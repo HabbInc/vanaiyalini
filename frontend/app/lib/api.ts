@@ -1,13 +1,34 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
 
-export function getToken() {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken');
+// export function getToken() {
+//   if (typeof window === 'undefined') return null;
+//   return localStorage.getItem('accessToken');
+// }
+
+// export function setToken(token: string) {
+//   localStorage.setItem('accessToken', token);
+// }
+
+let token: string | null = null;
+
+export function setToken(t: string, user?: any) {
+  token = t;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('accessToken', t);
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }
 }
 
-export function setToken(token: string) {
-  localStorage.setItem('accessToken', token);
+export function getToken() {
+  if (token) return token;
+  if (typeof window !== 'undefined') {
+    token = localStorage.getItem('accessToken');
+  }
+  return token;
 }
+
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const token = getToken();

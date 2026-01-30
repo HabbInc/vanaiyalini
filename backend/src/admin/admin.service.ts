@@ -1,0 +1,61 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { User } from '../users/schemas/user.schema';
+import { Order } from '../orders/schemas/order.schema';
+import { Product } from '../products/schemas/product.schema';
+
+@Injectable()
+export class AdminService {
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectModel(Product.name) private productModel: Model<Product>,
+  ) {}
+
+  // USERS
+  getUsers() {
+    return this.userModel
+      .find()
+      .select('_id name email roles status createdAt')
+      .sort({ createdAt: -1 });
+  }
+
+  deleteUser(id: string) {
+    return this.userModel.findByIdAndDelete(id);
+  }
+
+  // PRODUCTS
+  getProducts() {
+    return this.productModel.find().sort({ createdAt: -1 });
+  }
+
+  deleteProduct(id: string) {
+    return this.productModel.findByIdAndDelete(id);
+  }
+
+  // ORDERS
+  getOrders() {
+    return this.orderModel
+      .find()
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 });
+  }
+
+  async getSummary() {
+    const totalUsers = await this.userModel.countDocuments();
+    const totalOrders = await this.orderModel.countDocuments();
+
+    const revenueAgg = await this.orderModel.aggregate([
+      { $match: { status: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]);
+
+    return {
+      totalUsers,
+      totalOrders,
+      totalRevenue: revenueAgg[0]?.total || 0,
+    };
+  }
+}
