@@ -26,42 +26,109 @@ export default function MainHeader() {
   }
 
   return (
-    <header className="border-b bg-white">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
-        <Link href="/products" className="font-bold text-xl">
-          MiniEcom
+    <header className="w-full bg-white/60 backdrop-blur border-b border-black/10">
+      <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+
+        {/* LOGO */}
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-lg font-semibold tracking-tight">
+            MiniEcom<span className="text-red-500">.</span>
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-6 text-sm font-medium">
-          <Link href="/products" className="hover:underline">Products</Link>
+        {/* NAV LINKS */}
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <Link className="hover:opacity-70" href="/">Home</Link>
+          <Link className="hover:opacity-70" href="/products">Shop</Link>
 
-          {logged ? (
+          {logged && (
             <>
-              <Link href="/cart" className="hover:underline">Cart</Link>
-              <Link href="/orders" className="hover:underline">Orders</Link>
-              <Link href="/profile" className="hover:underline">Profile</Link>
-
               {isSeller && (
-                <Link href="/seller/products" className="hover:underline">
+                <Link className="hover:opacity-70" href="/seller/products">
                   Seller
                 </Link>
               )}
-
-              <button
-                onClick={logout}
-                className="rounded border px-3 py-1 hover:bg-gray-50"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="hover:underline">Login</Link>
-              <Link href="/register" className="hover:underline">Register</Link>
+              <Link className="hover:opacity-70" href="/orders">Orders</Link>
+              <Link className="hover:opacity-70" href="/profile">Profile</Link>
             </>
           )}
         </nav>
+
+        {/* RIGHT ICONS + AUTH */}
+        <div className="flex items-center gap-4">
+          <button className="p-2 rounded-full hover:bg-black/5" aria-label="Search">
+            <IconSearch />
+          </button>
+
+          <button className="p-2 rounded-full hover:bg-black/5" aria-label="Favorites">
+            <IconHeart />
+          </button>
+
+          {logged ? (
+            <button
+              onClick={logout}
+              className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
+            >
+              Logout
+            </button>
+          ) : (
+            <>
+              <Link className="text-sm hover:opacity-70" href="/login">Login</Link>
+              <Link className="text-sm hover:opacity-70" href="/register">Register</Link>
+            </>
+          )}
+        </div>
+
       </div>
     </header>
+  );
+}
+
+/* ---------------- ICONS ---------------- */
+
+function IconSearch() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M21 21l-4.3-4.3m1.3-5.2a7 7 0 11-14 0 7 7 0 0114 0z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function IconHeart() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 21s-7-4.6-9.4-8.4C.8 9.6 2.4 6.5 5.6 5.6c1.9-.6 4 .1 5.4 1.6
+           1.4-1.5 3.5-2.2 5.4-1.6 3.2.9 4.8 4 3 7
+           -2.4 3.8-9.4 8.4-9.4 8.4z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconBag() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M6 8h12l-1 13H7L6 8z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 8a3 3 0 016 0"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
