@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from './lib/api';
 
 type Product = {
@@ -21,6 +21,10 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
+  // ✅ 3D Animation refs
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const tiltRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     async function load() {
       setErr(null);
@@ -37,10 +41,44 @@ export default function HomePage() {
     load();
   }, []);
 
-  const hasProducts = products.length > 0;
+  // ✅ 3D hover / tilt logic
+  useEffect(() => {
+    const stage = stageRef.current;
+    const tilt = tiltRef.current;
+    if (!stage || !tilt) return;
+
+    const maxRotate = 10; // degrees
+    const maxTranslate = 10; // px
+
+    function onMove(e: MouseEvent) {
+      const rect = (stage as HTMLDivElement).getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width; // 0..1
+      const y = (e.clientY - rect.top) / rect.height; // 0..1
+
+      const rotateY = (x - 0.5) * (maxRotate * 2);
+      const rotateX = -(y - 0.5) * (maxRotate * 2);
+
+      const tx = (x - 0.5) * (maxTranslate * 2);
+      const ty = (y - 0.5) * (maxTranslate * 2);
+
+      (tilt as HTMLDivElement).style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${tx}px, ${ty}px, 0)`;
+    }
+
+    function onLeave() {
+      (tilt as HTMLDivElement).style.transform = `rotateX(0deg) rotateY(0deg) translate3d(0px, 0px, 0px)`;
+    }
+
+    stage.addEventListener('mousemove', onMove);
+    stage.addEventListener('mouseleave', onLeave);
+
+    return () => {
+      stage.removeEventListener('mousemove', onMove);
+      stage.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
 
   return (
-    <div className='relative'>
+    <div className="relative">
       <div className="bg-[#f6f2ee] text-[#121212]">
         {/* HERO */}
         <main className="relative mx-auto max-w-6xl px-4 py-10 md:py-14">
@@ -54,8 +92,8 @@ export default function HomePage() {
             {/* LEFT */}
             <div className="space-y-5">
               <span className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-semibold text-black/70">
-                  SUMMER COLLECTION
-                </span>
+                SUMMER COLLECTION
+              </span>
 
               <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
                 Fall - Winter <br />
@@ -87,8 +125,7 @@ export default function HomePage() {
               <div className="pt-6 grid grid-cols-3 gap-3">
                 <Badge title="Clothing" subtitle="Explore our latest apparel collection." />
                 <Badge title="Accessories" subtitle="Discover trendy accessories for every style." />
-                <Badge title="Footwear" subtitle="Step into comfort and style with our shoes.
-  " />
+                <Badge title="Footwear" subtitle="Step into comfort and style with our shoes." />
               </div>
 
               {/* Social */}
@@ -100,19 +137,33 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* RIGHT */}
-            <div className="relative">
+            {/* RIGHT (✅ 3D stage) */}
+            <div
+              ref={stageRef}
+              className="relative"
+              style={{ perspective: '1100px' }}
+            >
               {/* Circle behind image */}
               <div className="absolute right-8 top-10 h-72 w-72 md:h-120 md:w-120 rounded-full bg-[#f0d9d2] opacity-70" />
 
-              <div className="relative z-10 flex justify-center md:justify-end">
-                <div className="relative w-[280px] h-[380px] md:w-[360px] md:h-[480px]">
-                  {/* Put an image in /public/hero-model.png */}
+              {/* ✅ Tilt wrapper */}
+              <div
+                ref={tiltRef}
+                className="relative z-10 flex justify-center md:justify-end transition-transform duration-200 ease-out"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div
+                  className="relative w-[280px] h-[380px] md:w-[360px] md:h-[480px] rounded-2xl overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_rgba(0,0,0,0.12)]"
+                  style={{
+                    transform: 'translateZ(60px)',
+                    animation: 'floatHero 6s ease-in-out infinite',
+                  }}
+                >
                   <Image
                     src="/hero-model.jpg"
                     alt="Hero"
                     fill
-                    className="object-contain border w-10 px-4"
+                    className="object-cover"
                     priority
                   />
                 </div>
@@ -125,12 +176,30 @@ export default function HomePage() {
               <div className="pointer-events-none absolute right-[-8] bottom-2 hidden md:block opacity-60">
                 <DotsSmall />
               </div>
+
+              {/* ✅ Small hint */}
+              <div className="absolute right-3 top-3 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-[11px] text-black/60">
+                Hover for 3D
+              </div>
             </div>
           </div>
-        </main>  
+
+          {/* ✅ Floating animation keyframes */}
+          <style jsx>{`
+            @keyframes floatHero {
+              0%,
+              100% {
+                transform: translateZ(60px) translateY(0px);
+              }
+              50% {
+                transform: translateZ(60px) translateY(-10px);
+              }
+            }
+          `}</style>
+        </main>
       </div>
-      
-      {/* STEPS */} 
+
+      {/* STEPS */}
       <section className="mx-auto max-w-6xl px-4 py-10 md:py-14">
         <h2 className="text-2xl font-semibold mb-6">How It Works</h2>
         <div className="grid md:grid-cols-3 gap-6">
@@ -139,6 +208,211 @@ export default function HomePage() {
           <Step n="03" title="Checkout & Enjoy" desc="Complete your purchase and enjoy your new products." />
         </div>
       </section>
+
+            {/* FEATURED PRODUCTS */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Featured Products</h2>
+            <p className="text-sm text-black/60 mt-1">
+              Handpicked items from our latest collection.
+            </p>
+          </div>
+          <Link href="/products" className="text-sm underline hover:opacity-70">
+            View all →
+          </Link>
+        </div>
+
+        {err && (
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+            {err}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-black/10 bg-white p-5">
+                <div className="h-44 rounded-xl bg-gray-100 animate-pulse" />
+                <div className="mt-3 h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
+                <div className="mt-2 h-3 w-1/2 bg-gray-100 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="mt-6 rounded-2xl border border-black/10 bg-white p-6 text-black/60">
+            No products available yet. Add products as a seller/admin.
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((p) => (
+              <Link
+                key={p._id}
+                href={`/products/${p._id}`}
+                className="group rounded-2xl border border-black/10 bg-white p-5 shadow-sm hover:shadow-md transition"
+              >
+                <div className="relative overflow-hidden rounded-xl border border-black/10 bg-gray-50 h-44">
+                  {p.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`${API_BASE}${p.imageUrl}`}
+                      alt={p.title}
+                      className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-black/50 text-sm">
+                      No image
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3 space-y-1">
+                  <h3 className="font-semibold line-clamp-1">{p.title}</h3>
+                  <p className="text-sm text-black/60 line-clamp-2">
+                    {p.description || 'No description'}
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="font-semibold">LKR {p.price}</span>
+                  <span className="text-xs rounded-full bg-black/5 px-3 py-1">
+                    Stock: {p.stock ?? 0}
+                  </span>
+                </div>
+
+                <div className="mt-3 text-sm font-medium opacity-0 group-hover:opacity-100 transition">
+                  View details →
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* CATEGORIES */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Shop by Category</h2>
+            <p className="text-sm text-black/60 mt-1">
+              Find what you love faster with curated categories.
+            </p>
+          </div>
+          <Link href="/products" className="text-sm underline hover:opacity-70">
+            Browse →
+          </Link>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <CategoryCard title="Fashion" desc="New arrivals & trends" />
+          <CategoryCard title="Footwear" desc="Sneakers • Casual • Formal" />
+          <CategoryCard title="Accessories" desc="Bags • Watches • More" />
+          <CategoryCard title="Streetwear" desc="Daily essentials" />
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="rounded-3xl border border-black/10 bg-white/60 backdrop-blur p-8 md:p-10">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold">What customers say</h2>
+              <p className="text-sm text-black/60 mt-1">
+                Trusted by shoppers and sellers.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <Testimonial
+              quote="Super smooth checkout and the products look premium."
+              name="Nimal • Colombo"
+            />
+            <Testimonial
+              quote="As a seller, uploading items is easy and fast."
+              name="Kavindi • Jaffna"
+            />
+            <Testimonial
+              quote="Admin dashboard gives full control. Clean UI."
+              name="Team • MiniEcom"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* NEWSLETTER */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="rounded-3xl border border-black/10 bg-black text-white p-8 md:p-10">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-semibold">
+                Get offers & new drops
+              </h2>
+              <p className="text-white/70 mt-2">
+                Subscribe for updates. No spam — only the good stuff.
+              </p>
+            </div>
+
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex flex-col sm:flex-row gap-3"
+            >
+              <input
+                className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm outline-none focus:bg-white/15"
+                placeholder="Enter your email"
+              />
+              <button className="rounded-xl bg-white text-black px-5 py-3 text-sm font-semibold hover:opacity-90">
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-black/10 bg-[#f6f2ee]">
+        <div className="mx-auto max-w-6xl px-4 py-10 grid gap-8 md:grid-cols-4">
+          <div>
+            <div className="text-lg font-semibold">
+              MiniEcom<span className="text-red-500">.</span>
+            </div>
+            <p className="text-sm text-black/60 mt-2">
+              Modern mini e-commerce built with Next.js + NestJS + MongoDB.
+            </p>
+          </div>
+
+          <FooterCol
+            title="Shop"
+            links={[
+              { label: 'Products', href: '/products' },
+              { label: 'Cart', href: '/cart' },
+              { label: 'Orders', href: '/orders' },
+            ]}
+          />
+
+          <FooterCol
+            title="Account"
+            links={[
+              { label: 'Login', href: '/login' },
+              { label: 'Register', href: '/register' },
+              { label: 'Profile', href: '/profile' },
+            ]}
+          />
+
+          <FooterCol
+            title="Seller"
+            links={[
+              { label: 'Seller Dashboard', href: '/seller/products' },
+              { label: 'Add Product', href: '/seller/products/new' },
+            ]}
+          />
+        </div>
+
+        <div className="mx-auto max-w-6xl px-4 pb-8 text-sm text-black/50">
+          © {new Date().getFullYear()} MiniEcom. All rights reserved.
+        </div>
+      </footer>
+
     </div>
   );
 }
@@ -163,15 +437,6 @@ function Step({ n, title, desc }: { n: string; title: string; desc: string }) {
   );
 }
 
-function CategoryCard({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="rounded-2xl border border-black/10 bg-white/60 backdrop-blur p-5 hover:bg-white transition">
-      <div className="text-lg font-semibold">{title}</div>
-      <div className="text-sm text-black/60">{desc}</div>
-    </div>
-  );
-}
-
 /* ------------------ Dotted patterns ------------------ */
 function Dots() {
   return (
@@ -192,52 +457,7 @@ function DotsSmall() {
   );
 }
 
-/* ------------------ Icons (no extra library) ------------------ */
-function IconSearch() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-black/80">
-      <path
-        d="M21 21l-4.3-4.3m1.3-5.2a7 7 0 11-14 0 7 7 0 0114 0z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function IconHeart() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-black/80">
-      <path
-        d="M12 21s-7-4.6-9.4-8.4C.8 9.6 2.4 6.5 5.6 5.6c1.9-.6 4 .1 5.4 1.6 1.4-1.5 3.5-2.2 5.4-1.6 3.2.9 4.8 4 3 7-2.4 3.8-9.4 8.4-9.4 8.4z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function IconBag() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-black/80">
-      <path
-        d="M6 8h12l-1 13H7L6 8z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 8a3 3 0 016 0"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
+/* ------------------ Social Icons ------------------ */
 function IconFacebook() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-current">
@@ -278,3 +498,43 @@ function IconInstagram() {
     </svg>
   );
 }
+
+function Testimonial({ quote, name }: { quote: string; name: string }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white p-5">
+      <div className="text-sm text-black/70 leading-relaxed">“{quote}”</div>
+      <div className="mt-4 text-sm font-semibold">{name}</div>
+    </div>
+  );
+}
+
+function CategoryCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white p-5 hover:shadow-md transition cursor-pointer">
+      <div className="font-semibold">{title}</div>
+      <div className="text-sm text-black/60 mt-1">{desc}</div>
+    </div>
+  );
+}
+
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="mt-3 space-y-2">
+        {links.map((l) => (
+          <Link key={l.href} href={l.href} className="block text-sm text-black/60 hover:text-black">
+            {l.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
