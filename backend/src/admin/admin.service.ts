@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -73,5 +73,27 @@ export class AdminService {
       totalOrders,
       totalRevenue: revenueAgg[0]?.total || 0,
     };
+  }
+
+  async blockUser(id: string) {
+    const updated = await this.userModel.findByIdAndUpdate(
+      id,
+      { status: 'blocked' },
+      { new: true },
+    );
+
+    if (!updated) throw new NotFoundException('User not found');
+    return { message: 'User blocked', user: updated };
+  }
+
+  async unblockUser(id: string) {
+    const updated = await this.userModel.findByIdAndUpdate(
+      id,
+      { status: 'active' },
+      { new: true },
+    );
+
+    if (!updated) throw new NotFoundException('User not found');
+    return { message: 'User unblocked', user: updated };
   }
 }

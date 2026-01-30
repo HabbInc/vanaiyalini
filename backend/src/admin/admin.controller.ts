@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -53,4 +53,17 @@ export class AdminController {
   createProduct(@Req() req: any, @Body() dto: any) {
     return this.admin.createProduct(req.user.userId, dto);
   }
+
+  // ✅ Block user
+  @Patch('users/:id/block')
+  blockUser(@Param('id') id: string) {
+    return this.admin.blockUser(id);
+  }
+
+  // ✅ Unblock user
+  @Patch('users/:id/unblock')
+  unblockUser(@Param('id') id: string) {
+    return this.admin.unblockUser(id);
+  }
+
 }
