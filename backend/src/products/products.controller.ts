@@ -40,7 +40,7 @@ export class ProductsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('seller')
+  @Roles('seller', 'admin')
   @Post(':id/image')
   @UseInterceptors(
     FileInterceptor('file', {

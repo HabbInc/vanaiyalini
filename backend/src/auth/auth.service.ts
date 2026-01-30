@@ -1,11 +1,15 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException  } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { User } from 'src/users/schemas/user.schema';
+import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
     private readonly users: UsersService,
     private readonly jwt: JwtService,
   ) {}
@@ -41,6 +45,27 @@ export class AuthService {
       ...tokens,
     };
   }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    const user = await this.userModel
+      .findById(new Types.ObjectId(userId))
+      .exec();
+
+    if (!user) throw new NotFoundException('User not found');
+
+    // ✅ compare with passwordHash
+    const ok = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!ok) throw new BadRequestException('Current password is incorrect');
+
+    // ✅ save new passwordHash
+    const newHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = newHash;
+    await user.save();
+
+    return { message: 'Password updated successfully' };
+  }
+
+
 
   private async issueTokens(userId: string, roles: string[]) {
     const accessToken = await this.jwt.signAsync(

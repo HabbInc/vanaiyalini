@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '../../lib/api';
 
 export default function AdminProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -36,6 +38,13 @@ export default function AdminProductsPage() {
       <h1 className="text-2xl font-bold">Manage Products</h1>
       {err && <div className="text-red-600">{err}</div>}
 
+      <a
+        href="/admin/products/new"
+        className="inline-block rounded-lg bg-black text-white px-4 py-2"
+      >
+        + Add Product
+      </a>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((p) => (
           <div key={p._id} className="rounded-xl border bg-white p-5 shadow-sm">
@@ -57,13 +66,23 @@ export default function AdminProductsPage() {
             </p>
 
             <div className="mt-2 font-bold">LKR {p.price}</div>
-
-            <button
+            
+            <div className='flex justify-between items-center'>
+              <button
               onClick={() => deleteProduct(p._id)}
-              className="mt-3 text-red-600 underline"
+              className="mt-3 text-red-600 bg-black text-white px-2 py-1 rounded hover:bg-red-700"
             >
               Delete
             </button>
+
+            <button
+              onClick={() => router.push(`/admin/products/${p._id}/edit`)}
+              className="mt-3 text-sm  text-black px-2 py-1 rounded hover:bg-black hover:text-white border"
+            >
+              Edit
+            </button>
+            </div>
+
           </div>
         ))}
       </div>

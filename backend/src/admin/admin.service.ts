@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { User } from '../users/schemas/user.schema';
 import { Order } from '../orders/schemas/order.schema';
@@ -8,6 +8,15 @@ import { Product } from '../products/schemas/product.schema';
 
 @Injectable()
 export class AdminService {
+  async getMe(adminId: string) {
+  const user = await this.userModel
+    .findById(adminId)
+    .select('_id name email roles status createdAt')
+    .exec();
+
+  return user;
+}
+
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
@@ -41,6 +50,13 @@ export class AdminService {
       .find()
       .populate('userId', 'name email')
       .sort({ createdAt: -1 });
+  }
+
+  async createProduct(adminId: string, dto: any) {
+    return this.productModel.create({
+      ...dto,
+      sellerId: new Types.ObjectId(adminId),
+    });
   }
 
   async getSummary() {
