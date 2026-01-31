@@ -13,6 +13,8 @@ function RotatingMesh() {
     ref.current.rotation.x += delta * 0.2;
   });
 
+
+  
   return (
     <mesh ref={ref} scale={1.4}>
       <icosahedronGeometry args={[1.2, 1]} />
