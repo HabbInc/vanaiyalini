@@ -40,6 +40,7 @@ export default function MainHeader() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           <Link className="hover:opacity-70" href="/">Home</Link>
           <Link className="hover:opacity-70" href="/products">Shop</Link>
+          <Link className="hover:opacity-70" href="/about">About</Link>
 
           {logged && (
             <>
