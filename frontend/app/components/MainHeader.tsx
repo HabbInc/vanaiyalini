@@ -39,7 +39,7 @@ export default function MainHeader() {
         {/* NAV LINKS */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           <Link className="hover:opacity-70" href="/">Home</Link>
-          <Link className="hover:opacity-70" href="/products">Shop</Link>
+          <Link className="hover:opacity-70" href="/products">Products</Link>
           <Link className="hover:opacity-70" href="/about">About</Link>
 
           {logged && (
@@ -50,6 +50,7 @@ export default function MainHeader() {
                 </Link>
               )}
               <Link className="hover:opacity-70" href="/orders">Orders</Link>
+              <Link className="hover:opacity-70" href="/cart">Cart</Link>
               <Link className="hover:opacity-70" href="/profile">Profile</Link>
             </>
           )}
@@ -61,9 +62,11 @@ export default function MainHeader() {
             <IconSearch />
           </button>
 
-          <button className="p-2 rounded-full hover:bg-black/5" aria-label="Favorites">
-            <IconHeart />
-          </button>
+          <Link href="/wishlist">
+            <button className="p-2 rounded-full hover:bg-black/5 " aria-label="Favorites">
+              <IconHeart />
+            </button>
+          </Link>
 
           {logged ? (
             <button

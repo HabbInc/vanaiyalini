@@ -36,6 +36,9 @@ export default function ProductDetailPage() {
   const [size, setSize] = useState<string>("M");
   const [color, setColor] = useState<string>("Default");
 
+  const [related, setRelated] = useState<Product[]>([]);
+
+
   useEffect(() => {
     apiFetch(`/products/${id}`)
       .then((p: Product) => {
@@ -53,6 +56,12 @@ export default function ProductDetailPage() {
         setSize((p.sizes?.[2] ?? p.sizes?.[0] ?? "M") as string);
       })
       .catch((e) => setError(e.message));
+
+      // 🔥 fetch related products
+      apiFetch(`/products/${id}/related`)
+        .then((items: Product[]) => setRelated(items))
+        .catch(() => {});
+
   }, [id]);
 
   const outOfStock = (product?.stock ?? 0) <= 0;
@@ -306,7 +315,7 @@ export default function ProductDetailPage() {
                     ? "Out of stock"
                     : loading
                     ? "Adding..."
-                    : "Add to bag"}
+                    : "Add to cart"}
                 </button>
 
                 <button
@@ -351,21 +360,44 @@ export default function ProductDetailPage() {
         </aside>
       </section>
 
-      {/* You may also like (simple placeholder) */}
-      <section className="mt-16">
-        <h2 className="text-center font-serif text-2xl">You may also like</h2>
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="group">
-              <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100" />
-              <div className="mt-3 text-sm">
-                <div className="text-zinc-800">Recommended item</div>
-                <div className="text-zinc-600">LKR —</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* RELATED PRODUCTS */}
+      {related.length > 0 && (
+        <section className="mt-16">
+          <h2 className="text-center font-serif text-2xl">
+            You may also like
+          </h2>
+
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {related.map((p) => (
+              <button
+                key={p._id}
+                onClick={() => router.push(`/products/${p._id}`)}
+                className="group text-left"
+              >
+                <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100">
+                  {p.imageUrl ? (
+                    <img
+                      src={`${API_BASE}${p.imageUrl}`}
+                      alt={p.title}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-zinc-500">
+                      No image
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3 text-sm">
+                  <div className="text-zinc-800 line-clamp-1">{p.title}</div>
+                  <div className="text-zinc-600">LKR {p.price}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
     </div>
   );
 }

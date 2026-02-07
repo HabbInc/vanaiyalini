@@ -9,6 +9,47 @@ export class ProductsService {
     @InjectModel(Product.name) private productModel: Model<Product>,
   ) {}
 
+  // ✅ NEW: Related products
+  async findRelated(productId: string) {
+    const current = await this.productModel.findById(productId).lean();
+    if (!current) throw new NotFoundException('Product not found');
+
+    const limit = 6;
+
+    // 1) Try same seller
+    const sameSeller = await this.productModel
+      .find({
+        _id: { $ne: new Types.ObjectId(productId) },
+        sellerId: current.sellerId,
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    // If enough, return
+    if (sameSeller.length >= 3) return sameSeller;
+
+    // 2) Fill remaining with similar price
+    const min = Math.max(0, (current.price ?? 0) - 2000);
+    const max = (current.price ?? 0) + 2000;
+
+    const fill = await this.productModel
+      .find({
+        _id: { $ne: new Types.ObjectId(productId) },
+        price: { $gte: min, $lte: max },
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit - sameSeller.length)
+      .lean();
+
+    // Merge + remove duplicates
+    const map = new Map<string, any>();
+    for (const p of [...sameSeller, ...fill]) map.set(String(p._id), p);
+
+    return Array.from(map.values()).slice(0, limit);
+  }
+
+
   // Seller creates product
   create(sellerId: string, data: any) {
     return this.productModel.create({

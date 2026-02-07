@@ -64,6 +64,12 @@ export class ProductsController {
     return this.products.setImage(id, imageUrl);
   }
 
+  // ✅ Related products (public)
+  @Get(':id/related')
+  findRelated(@Param('id') id: string) {
+    return this.products.findRelated(id);
+  }
+
 
   // 🌍 Public
   @Get(':id')
