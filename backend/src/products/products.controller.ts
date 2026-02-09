@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -18,7 +19,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join  } from 'path';
 
@@ -62,6 +63,37 @@ export class ProductsController {
     if (!file) throw new BadRequestException('No file uploaded (only image files allowed)');
     const imageUrl = `/uploads/${file.filename}`;
     return this.products.setImage(id, imageUrl);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('seller', 'admin')
+  @Post(':id/images')
+  @UseInterceptors(
+    FilesInterceptor('files', 8, {
+      storage: diskStorage({
+        destination: join(process.cwd(), 'uploads'),
+        filename: (req, file, cb) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, unique + extname(file.originalname));
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) return cb(null, false);
+        cb(null, true);
+      },
+      limits: { fileSize: 3 * 1024 * 1024 }, // 3MB each
+    }),
+  )
+  async uploadImages(
+    @Param('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded (only image files allowed)');
+    }
+
+    const imageUrls = files.map((f) => `/uploads/${f.filename}`);
+    return this.products.addImages(id, imageUrls);
   }
 
   // ✅ Related products (public)

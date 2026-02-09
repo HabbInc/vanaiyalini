@@ -16,6 +16,9 @@ export default function AdminAddProductPage() {
   // Image
   const [file, setFile] = useState<File | null>(null);
 
+  const [files, setFiles] = useState<File[]>([]);
+
+
   // UI state
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -117,7 +120,8 @@ export default function AdminAddProductPage() {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            multiple
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
             className="block w-full text-sm"
           />
 

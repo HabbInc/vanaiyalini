@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../../../../lib/api';
 import { useParams, useRouter } from 'next/navigation';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
+
 export default function AdminEditProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -20,13 +22,18 @@ export default function AdminEditProductPage() {
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
 
+  // main image (optional)
   const [imageUrl, setImageUrl] = useState('');
-  const [file, setFile] = useState<File | null>(null);
 
-  const previewUrl = useMemo(() => {
-    if (!file) return '';
-    return URL.createObjectURL(file);
-  }, [file]);
+  // ✅ multiple images from backend
+  const [images, setImages] = useState<string[]>([]);
+
+  // ✅ selected upload files
+  const [files, setFiles] = useState<File[]>([]);
+
+  const previews = useMemo(() => {
+    return files.map((f) => URL.createObjectURL(f));
+  }, [files]);
 
   async function load() {
     setLoading(true);
@@ -37,6 +44,7 @@ export default function AdminEditProductPage() {
       setPrice(p.price);
       setStock(p.stock);
       setImageUrl(p.imageUrl || '');
+      setImages(Array.isArray(p.images) ? p.images : []);
     } catch (e: any) {
       setErr(e.message);
     } finally {
@@ -59,7 +67,7 @@ export default function AdminEditProductPage() {
         method: 'PATCH',
         body: JSON.stringify({ title, description, price, stock }),
       });
-      setMsg('Product updated');
+      setMsg('Product updated ✅');
     } catch (e: any) {
       setErr(e.message);
     } finally {
@@ -67,21 +75,24 @@ export default function AdminEditProductPage() {
     }
   }
 
-  async function uploadImage() {
-    if (!file) return;
+  // ✅ upload multiple images
+  async function uploadImages() {
+    if (!files.length) return;
     setUploading(true);
     setErr(null);
+    setMsg(null);
 
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      files.forEach((f) => fd.append('files', f)); // ✅ must match FilesInterceptor('files')
 
-      await apiFetch(`/products/${id}/image`, {
+      await apiFetch(`/products/${id}/images`, {
         method: 'POST',
         body: fd,
       });
 
-      setFile(null);
+      setFiles([]);
+      setMsg('Images uploaded ✅');
       await load();
     } catch (e: any) {
       setErr(e.message);
@@ -97,59 +108,68 @@ export default function AdminEditProductPage() {
       <header className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold">Edit Product (Admin)</h1>
-          <p className="text-gray-600">
-            Admin can edit any product
-          </p>
+          <p className="text-gray-600">Admin can edit any product</p>
         </div>
 
-        <button
-          onClick={() => router.push('/admin/products')}
-          className="text-sm underline"
-        >
+        <button onClick={() => router.push('/admin/products')} className="text-sm underline">
           Back
         </button>
       </header>
 
-      {err && (
-        <div className="bg-red-50 border border-red-200 p-4 text-red-700 rounded">
-          {err}
-        </div>
-      )}
-      {msg && (
-        <div className="bg-green-50 border border-green-200 p-4 text-green-700 rounded">
-          {msg}
-        </div>
-      )}
+      {err && <div className="bg-red-50 border border-red-200 p-4 text-red-700 rounded">{err}</div>}
+      {msg && <div className="bg-green-50 border border-green-200 p-4 text-green-700 rounded">{msg}</div>}
 
       <div className="bg-white border rounded-xl p-6 space-y-6">
-        {/* IMAGE */}
+        {/* ✅ IMAGES PREVIEW (existing + selected) */}
         <section className="space-y-3">
-          {previewUrl ? (
-            <img src={previewUrl} className="rounded border max-h-64 w-full object-cover" />
-          ) : imageUrl ? (
-            <img
-              src={`http://localhost:3001${imageUrl}`}
-              className="rounded border max-h-64 w-full object-cover"
-            />
-          ) : (
-            <div className="h-48 border rounded flex items-center justify-center text-gray-500">
-              No image
-            </div>
-          )}
+          <div className="grid grid-cols-3 gap-3">
+            {/* existing images */}
+            {images?.map((img, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={img + i}
+                src={img.startsWith('http') ? img : `${API_BASE}${img}`}
+                className="h-28 w-full object-cover rounded border"
+                alt=""
+              />
+            ))}
+
+            {/* fallback to main imageUrl */}
+            {!images?.length && imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`${API_BASE}${imageUrl}`}
+                className="h-28 w-full object-cover rounded border"
+                alt=""
+              />
+            )}
+
+            {/* selected previews */}
+            {previews.map((src, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={src + i}
+                src={src}
+                className="h-28 w-full object-cover rounded border ring-2 ring-black/20"
+                alt=""
+              />
+            ))}
+          </div>
 
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            multiple
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
           />
 
           <button
             type="button"
-            onClick={uploadImage}
-            disabled={!file || uploading}
+            onClick={uploadImages}
+            disabled={!files.length || uploading}
             className="border px-4 py-2 rounded"
           >
-            {uploading ? 'Uploading...' : 'Upload Image'}
+            {uploading ? 'Uploading...' : `Upload ${files.length || ''} Image(s)`}
           </button>
         </section>
 
@@ -187,10 +207,7 @@ export default function AdminEditProductPage() {
             />
           </div>
 
-          <button
-            disabled={saving}
-            className="bg-black text-white px-4 py-2 rounded"
-          >
+          <button disabled={saving} className="bg-black text-white px-4 py-2 rounded">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>

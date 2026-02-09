@@ -8,3 +8,5 @@ Password - admin123
 Email - pirakash12r@gmail.com
 Password - 123456
 
+Email - kyalini2001@gmail.com
+Password - vanai2001

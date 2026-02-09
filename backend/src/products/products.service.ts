@@ -79,6 +79,19 @@ export class ProductsService {
     return updated;
   }
 
+  async addImages(productId: string, imageUrls: string[]) {
+    const updated = await this.productModel.findByIdAndUpdate(
+      productId,
+      {
+        $push: { images: { $each: imageUrls } }, // ✅ append to array
+        $set: { imageUrl: imageUrls[0] },        // ✅ optional: set main image to first
+      },
+      { new: true },
+    );
+    return updated;
+  }
+
+
   // Public detail
   async findOne(id: string) {
     const product = await this.productModel.findById(id).exec();
